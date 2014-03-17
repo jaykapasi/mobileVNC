@@ -60,7 +60,7 @@ public class Screen extends Activity implements OnTouchListener {
 					dis = new DataInputStream(soc.getInputStream());
 					sWid = dis.readInt(); 
 					sHei = dis.readInt();
-					Log.d("***" +sWid, "^^^"+sHei);
+					//Log.d("***" +sWid, "^^^"+sHei);
  					while (true) {
 						int len = dis.readInt();
 						Log.d("===============" + len, "-------------------"
@@ -91,12 +91,14 @@ public class Screen extends Activity implements OnTouchListener {
 	}
 
 	@Override
-	public boolean onTouch(View v, MotionEvent e) {
+	public boolean onTouch(View v, final MotionEvent ae) {
 		// TODO Auto-generated method stub
-		if(!(prex==e.getX() && prey==e.getY()))
-				{
-				 x=e.getX();
-			     y=e.getY();
+		Log.d("***" +sWid, "^^^"+sHei);
+		//if(!(prex==e.getX() && prey==e.getY()))
+			//	{
+				 x=ae.getX();
+			     y=ae.getY();
+			     Log.d(x+"----",y+"-----");
 			     new Thread(new Runnable()
 			     {
 			      @Override
@@ -104,75 +106,68 @@ public class Screen extends Activity implements OnTouchListener {
 			      {
 			       try
 			       {
-			       Socket soc1 = new Socket(ip,5801);	   
-			       DataOutputStream dos = new DataOutputStream(soc1.getOutputStream());
-			       dos.writeInt(-5);
-			       dos.writeInt((int)(x*(float)(sWid/wid)));
-			       dos.writeInt((int)(y*(float)(sHei/hei)));	
-			       dos.close();
-			       soc1.close();
+			       switch(ae.getAction())
+			       {
+			       case MotionEvent.ACTION_MOVE:
+			    	   try
+				       {
+			    		   Socket soc1 = new Socket(ip,5801);	   
+					       DataOutputStream dos = new DataOutputStream(soc1.getOutputStream());
+					       dos.writeInt(-5);
+					       int te=(int)(x*(float)(sWid/wid));
+					       dos.writeInt(te);
+					       dos.flush();
+					       int te1=(int)(y*(float)(sHei/wid));
+					       dos.writeInt(te1);
+					       dos.flush();
+					       
+					       dos.close();
+					       soc1.close();
+				       }
+			    	   catch(Exception e)
+				       {}
+			    	   break;
+			    	   
+			       case MotionEvent.ACTION_UP:
+			    	   try
+				       {    
+			    		   Socket soc1 = new Socket(ip,5801);
+			    		   DataOutputStream dos = new DataOutputStream(soc1.getOutputStream());
+				       dos.writeInt(-2);
+				       dos.writeInt(16);
+				       dos.close();
+				       soc1.close();
+				       }
+				       catch(Exception e)
+				       {}
+			
+			    	   break;	
+			    	   
+			       case MotionEvent.ACTION_DOWN:
+			    	   try
+				       {
+			    		   
+			    		   Socket soc1 = new Socket(ip,5801);   
+			    		   DataOutputStream dos = new DataOutputStream(soc1.getOutputStream());
+				       dos.writeInt(-1);
+				       dos.writeInt(16);
+				       dos.close();
+				       soc1.close();
+				       }
+				       catch(Exception e)
+				       {}   
+			       break;
+			   
+			       
+				       }
 			       }
+			       
 			       catch(Exception e)
 			       {			    	   
 			       }
 			      }
 			     }).start();
-			     //Toast.makeText(this, "Mouse Moved at "+e.getX()+ " "+e.getY(), Toast.LENGTH_SHORT).show();
-			     return true;
-				}
-		else
-		{
-		switch(e.getAction())
-		{
-		case MotionEvent.ACTION_UP:
-			Log.d("Released at ",e.getX()+"  "+e.getY());			
-			new Thread(new Runnable()
-		     {
-		      @Override
-		      public void run()
-		      {
-		       try
-		       {
-		       Socket soc1 = new Socket(ip,5801);   
-		       DataOutputStream dos = new DataOutputStream(soc1.getOutputStream());
-		       dos.writeInt(-2);	
-		       dos.close();
-		       soc1.close();
-		       }
-		       catch(Exception e)
-		       {}
-		      }
-		     }).start();
-			prex = e.getX();
-			prey = e.getY();
-			return true;
-			
-		case MotionEvent.ACTION_DOWN:
-			Log.d("Pressed at ",e.getX()+"  "+e.getY());
-			x = e.getX();
-			y = e.getY();
-			new Thread(new Runnable()
-		     {
-		      @Override
-		      public void run()
-		      {
-		       try
-		       {
-		       Socket soc1 = new Socket(ip,5801);
-		       DataOutputStream dos = new DataOutputStream(soc.getOutputStream());
-		       dos.writeInt(-1);
-		       dos.close();
-		       soc1.close();
-		       }
-		       catch(Exception e)
-		       {}
-		      }
-		     }).start();
-			prex = e.getX();
-			prey = e.getY();
-			return true;
-		}
-		}
-		return false;
+			 
+		return true;
 	}
 }
